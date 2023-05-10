@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,18 +34,21 @@ public class CustomerController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public CustomerResponse createCustomer(
-      @RequestBody @Validated(CreateConstraint.class) CustomerRequest request) {
+  public CustomerResponse createCustomer(@RequestBody @Validated(CreateConstraint.class) CustomerRequest request) {
     return customerService.createCustomer(request);
   }
 
   @GetMapping("/{customerId}")
-  public ResponseEntity<CustomerResponse> getCustomer(
-      @PathVariable @Valid @NotNull UUID customerId
-  ) {
+  public ResponseEntity<CustomerResponse> getCustomer(@PathVariable @Valid @NotNull UUID customerId) {
     Optional<CustomerResponse> customer = customerService.getCustomer(customerId);
+    return customer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @DeleteMapping("/{customerId}")
+  public ResponseEntity<CustomerResponse> deleteCustomer(@PathVariable @Valid @NotNull UUID customerId) {
+    Optional<CustomerResponse> customer = customerService.deleteCustomer(customerId);
     return customer
-        .map(ResponseEntity::ok)
+        .map(customerResponse -> ResponseEntity.accepted().body(customerResponse))
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
 }

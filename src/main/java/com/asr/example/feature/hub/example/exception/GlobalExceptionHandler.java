@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -36,5 +38,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     errorResponse.put("detailedMessage", ex.getMessage());
     errorResponse.put("requestDescription", request.getDescription(false));
     return ResponseEntity.status(status).body(errorResponse);
+  }
+
+  @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+  @ExceptionHandler(DisabledFeatureException.class)
+  Object handleDisabledFeature(
+      DisabledFeatureException ex, WebRequest request) {
+    Map<String, Object> errorResponse = new HashMap<>();
+    errorResponse.put("message", ex.getMessage());
+    errorResponse.put("timestamp", OffsetDateTime.now());
+    errorResponse.put("detailedMessage", ex.getMessage());
+    errorResponse.put("requestDescription", request.getDescription(false));
+    return errorResponse;
   }
 }

@@ -9,4 +9,6 @@ public interface CustomerService {
   CustomerResponse createCustomer(CustomerRequest request);
 
   Optional<CustomerResponse> getCustomer(UUID customerId);
+
+  Optional<CustomerResponse> deleteCustomer(UUID customerId);
 }
