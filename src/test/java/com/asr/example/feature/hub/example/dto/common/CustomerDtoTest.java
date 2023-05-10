@@ -72,7 +72,7 @@ class CustomerDtoTest {
         .dateOfBirth(LocalDate.now().minus(2, ChronoUnit.DAYS))
         .email("asr@yopmail.com")
         .phoneNumber("1234567890")
-        .addressDto(addressDto)
+        .address(addressDto)
         .build();
     Set<ConstraintViolation<CustomerRequest>> violations = validator.validate(customerRequest, CreateConstraint.class);
     Assertions.assertNotEquals(0, violations.size());

@@ -38,18 +38,18 @@ public abstract class CustomerDto {
   @Past(message = "Date of Birth should be lesser than today's date")
   LocalDate dateOfBirth;
 
-  @NotNull(groups = { CreateConstraint.class })
+  @NotEmpty(groups = { CreateConstraint.class })
   @Email
   String email;
 
-  @NotNull(groups = { CreateConstraint.class })
+  @NotEmpty(groups = { CreateConstraint.class })
   @Pattern(regexp = "^(\\+?\\d{1,4}( \\d{1,4}){0,2})$")
   String isdCode;
 
-  @NotNull(groups = { CreateConstraint.class })
+  @NotEmpty(groups = { CreateConstraint.class })
   @Pattern(regexp = "^[\\d-() ]+$")
   String phoneNumber;
 
   @NotNull(groups = { CreateConstraint.class })
-  AddressDto addressDto;
+  AddressDto address;
 }
