@@ -1,13 +1,18 @@
 package com.asr.example.feature.hub.example.config;
 
+import com.asr.example.feature.hub.example.config.property.UserProperties;
 import io.featurehub.client.ClientContext;
 import io.featurehub.client.EdgeFeatureHubConfig;
 import io.featurehub.client.FeatureHubConfig;
 import io.featurehub.sse.model.StrategyAttributeCountryName;
 import io.featurehub.sse.model.StrategyAttributeDeviceName;
 import io.featurehub.sse.model.StrategyAttributePlatformName;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,8 +20,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+@Slf4j
 @Configuration
 public class CustomFeatureHubConfig {
 
@@ -25,6 +32,9 @@ public class CustomFeatureHubConfig {
 
   @Value("${feature.hub.url}")
   Optional<String> featureHubUrl;
+
+  @Autowired
+  private UserProperties userProperties;
 
   @Bean
   public FeatureHubConfig featureHubConfig() {
@@ -83,7 +93,22 @@ public class CustomFeatureHubConfig {
       if (credentials instanceof Jwt) {
         Jwt jwt = (Jwt) credentials;
         fhClient.userKey(jwt.getSubject());
-        fhClient.attr("email", jwt.getClaimAsString("email"));
+        String emailLabel = "email";
+        fhClient.attr(emailLabel, jwt.getClaimAsString(emailLabel));
+        if (!ObjectUtils.isEmpty(jwt.getClaimAsString(emailLabel))
+            && StringUtils.hasText(jwt.getClaimAsString(emailLabel))) {
+          List<String> phases = userProperties.getAgentsPhases().get(jwt.getClaimAsString(emailLabel));
+          if (!ObjectUtils.isEmpty(phases)) {
+            fhClient.attr(
+                "phase",
+                phases
+                    .stream()
+                    .filter(StringUtils::hasText)
+                    .map(String::trim)
+                    .map(String::toUpperCase)
+                    .collect(Collectors.joining(",")));
+          }
+        }
       }
     }
   }
