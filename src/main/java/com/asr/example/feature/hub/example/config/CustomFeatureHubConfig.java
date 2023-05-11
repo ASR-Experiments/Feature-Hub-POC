@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.StringUtils;
 
 @Configuration
@@ -62,12 +65,27 @@ public class CustomFeatureHubConfig {
         .map(String::trim)
         .ifPresent(fhClient::sessionKey);
     fhClient.version("V2");
+    setUserDetails(fhClient, SecurityContextHolder.getContext().getAuthentication());
     Optional
         .ofNullable(request.getHeader("x-application-source"))
         .filter(StringUtils::hasText)
         .map(String::trim)
         .ifPresent(applicationSource -> fhClient.attr("ApplicationSource", applicationSource));
     return fhClient;
+  }
+
+  private void setUserDetails(ClientContext fhClient, Authentication authentication) {
+    if (authentication != null) {
+      if (!authentication.isAuthenticated()) {
+        return;
+      }
+      Object credentials = authentication.getCredentials();
+      if (credentials instanceof Jwt) {
+        Jwt jwt = (Jwt) credentials;
+        fhClient.userKey(jwt.getSubject());
+        fhClient.attr("email", jwt.getClaimAsString("email"));
+      }
+    }
   }
 
   private Optional<StrategyAttributeDeviceName> getDeviceName(String userAgent) {
