@@ -55,15 +55,15 @@ public class CustomerServiceImpl implements CustomerService {
 
     ClientContext clientContext = ctxProvider.get();
     FeatureState deletionEnabled = clientContext.feature(() -> "DELETION_ENABLED");
-//    FeatureState experimentalFeatureEnabled = clientContext.feature(() -> "EXPERIMENTAL_FEATURE_ENABLED");
+    //    FeatureState experimentalFeatureEnabled = clientContext.feature(() -> "EXPERIMENTAL_FEATURE_ENABLED");
 
     if (Boolean.FALSE.equals((Optional.ofNullable(deletionEnabled)
-                  .map(FeatureState::getBoolean)
-                  .orElse(Boolean.FALSE)
-//              || Optional.ofNullable(experimentalFeatureEnabled)
-//                         .map(FeatureState::getBoolean)
-//                         .orElse(Boolean.FALSE)
-    ))) {
+                                      .map(FeatureState::getBoolean)
+                                      .orElse(Boolean.FALSE)
+                                 //              || Optional.ofNullable(experimentalFeatureEnabled)
+                                 //                         .map(FeatureState::getBoolean)
+                                 //                         .orElse(Boolean.FALSE)
+                             ))) {
       throw new DisabledFeatureException("DELETION_ENABLED");
     }
 
@@ -77,10 +77,18 @@ public class CustomerServiceImpl implements CustomerService {
 
   @Override
   public List<CustomerResponse> listCustomer(Pageable pageRequest) {
+
+    ClientContext clientContext = ctxProvider.get();
+    FeatureState listEnabled = clientContext.feature(() -> "LIST_ENABLED");
+
+    if (Boolean.FALSE.equals((Optional.ofNullable(listEnabled)
+                                      .map(FeatureState::getBoolean)
+                                      .orElse(Boolean.FALSE)))) {
+      throw new DisabledFeatureException("LIST_ENABLED");
+    }
     return customerRepository
         .findAll(pageRequest)
         .stream().map(customerResponseMapper::mapResponse)
         .collect(Collectors.toList());
   }
-
 }
