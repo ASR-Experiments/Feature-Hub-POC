@@ -4,6 +4,7 @@ import com.asr.example.feature.hub.example.dto.CreateConstraint;
 import com.asr.example.feature.hub.example.dto.request.CustomerRequest;
 import com.asr.example.feature.hub.example.dto.response.CustomerResponse;
 import com.asr.example.feature.hub.example.service.CustomerService;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.validation.Valid;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -36,6 +38,12 @@ public class CustomerController {
   @ResponseStatus(HttpStatus.CREATED)
   public CustomerResponse createCustomer(@RequestBody @Validated(CreateConstraint.class) CustomerRequest request) {
     return customerService.createCustomer(request);
+  }
+
+  @GetMapping
+  @ResponseStatus(HttpStatus.OK)
+  public List<CustomerResponse> listCustomer(Pageable pageRequest) {
+    return customerService.listCustomer(pageRequest);
   }
 
   @GetMapping("/{customerId}")

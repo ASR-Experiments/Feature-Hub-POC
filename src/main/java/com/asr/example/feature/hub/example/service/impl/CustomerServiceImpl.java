@@ -10,13 +10,16 @@ import com.asr.example.feature.hub.example.repository.CustomerRepository;
 import com.asr.example.feature.hub.example.service.CustomerService;
 import io.featurehub.client.ClientContext;
 import io.featurehub.client.FeatureState;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.inject.Provider;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -52,14 +55,15 @@ public class CustomerServiceImpl implements CustomerService {
 
     ClientContext clientContext = ctxProvider.get();
     FeatureState deletionEnabled = clientContext.feature(() -> "DELETION_ENABLED");
-    FeatureState experimentalFeatureEnabled = clientContext.feature(() -> "EXPERIMENTAL_FEATURE_ENABLED");
+//    FeatureState experimentalFeatureEnabled = clientContext.feature(() -> "EXPERIMENTAL_FEATURE_ENABLED");
 
-    if (!(Optional.ofNullable(deletionEnabled)
+    if (Boolean.FALSE.equals((Optional.ofNullable(deletionEnabled)
                   .map(FeatureState::getBoolean)
                   .orElse(Boolean.FALSE)
-              || Optional.ofNullable(experimentalFeatureEnabled)
-                         .map(FeatureState::getBoolean)
-                         .orElse(Boolean.FALSE))) {
+//              || Optional.ofNullable(experimentalFeatureEnabled)
+//                         .map(FeatureState::getBoolean)
+//                         .orElse(Boolean.FALSE)
+    ))) {
       throw new DisabledFeatureException("DELETION_ENABLED");
     }
 
@@ -69,6 +73,14 @@ public class CustomerServiceImpl implements CustomerService {
     }
     customerRepository.delete(customer.get());
     return Optional.ofNullable(customerResponseMapper.mapResponse(customer.get()));
+  }
+
+  @Override
+  public List<CustomerResponse> listCustomer(Pageable pageRequest) {
+    return customerRepository
+        .findAll(pageRequest)
+        .stream().map(customerResponseMapper::mapResponse)
+        .collect(Collectors.toList());
   }
 
 }
