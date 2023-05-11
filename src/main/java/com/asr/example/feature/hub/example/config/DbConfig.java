@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@EnableJpaAuditing
 @EnableTransactionManagement
+@EnableJpaAuditing(auditorAwareRef = "auditorAwareImpl")
 @EnableJpaRepositories(basePackages = {"com.asr.example.feature.hub.example.repository"})
 public class DbConfig {
 }
